@@ -11,13 +11,19 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-      // API proxy route for Kie AI to completely bypass CORS issues
+  // API proxy route for Kie AI to completely bypass CORS issues
   app.post("/api/chat", async (req, res) => {
     try {
       const { apiKey, baseUrl, model, messages, temperature, max_tokens, response_format } = req.body;
 
-      if (!apiKey) {
-        return res.status(400).json({ error: { message: "API Key is required" } });
+      const finalApiKey = process.env.KIE_API_KEY || process.env.GEMINI_API_KEY || apiKey;
+
+      if (!finalApiKey) {
+        return res.status(400).json({ 
+          error: { 
+            message: "API Key tidak ditemukan. Harap tambahkan KIE_API_KEY atau GEMINI_API_KEY sebagai secret di menu Secrets AI Studio." 
+          } 
+        });
       }
 
       // Handle any trailing slashes and ensure "/chat/completions" is not duplicated
@@ -36,7 +42,7 @@ async function startServer() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
+          "Authorization": `Bearer ${finalApiKey}`
         },
         body: JSON.stringify({
           model,

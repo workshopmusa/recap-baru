@@ -30,7 +30,7 @@ import { fileToBase64, analyzeMangaBatch } from './utils/api';
 import { saveProjectToDB, loadAllProjectsFromDB, deleteProjectFromDB } from './utils/db';
 
 const DEFAULT_SETTINGS: Settings = {
-  apiKey: "8d9614815be4c2cede1cd5f951c5f83e",
+  apiKey: "",
   baseUrl: "https://api.kie.ai/gemini-3-flash/v1",
   model: "gemini-3-flash"
 };
@@ -41,7 +41,12 @@ export default function App() {
     const saved = localStorage.getItem('manga_recap_settings');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Clear old hardcoded default key to force reading from environment secret
+        if (parsed.apiKey === "8d9614815be4c2cede1cd5f951c5f83e") {
+          parsed.apiKey = "";
+        }
+        return parsed;
       } catch (_) {}
     }
     return DEFAULT_SETTINGS;
